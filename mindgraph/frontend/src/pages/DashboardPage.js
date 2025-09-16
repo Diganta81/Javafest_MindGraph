@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Container,
   Typography,
@@ -23,38 +23,38 @@ import {
   Person
 } from '@mui/icons-material';
 import { useAuth } from '../utils/AuthContext';
+import { useData } from '../utils/DataContext';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const { getStats, tasks, events } = useData();
 
   // Get current date information
   const currentDate = new Date();
   const currentHour = currentDate.getHours();
   const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
 
-  // Mock data - in a real app, this would come from API calls
-  const [stats] = useState({
-    totalTasks: 24,
-    completedTasks: 18,
-    pendingTasks: 6,
-    upcomingDeadlines: 3
-  });
+  // Get real stats from data context
+  const stats = getStats();
 
-  const recentTasks = [
-    { id: 1, title: 'Complete project proposal', status: 'completed', priority: 'high', dueDate: '2025-09-15' },
-    { id: 2, title: 'Review team feedback', status: 'pending', priority: 'medium', dueDate: '2025-09-16' },
-    { id: 3, title: 'Prepare presentation slides', status: 'in-progress', priority: 'high', dueDate: '2025-09-17' },
-    { id: 4, title: 'Update documentation', status: 'pending', priority: 'low', dueDate: '2025-09-18' },
-  ];
+  // Get recent tasks (last 5 tasks by creation date)
+  const recentTasks = tasks
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 4);
 
-  const upcomingEvents = [
-    { id: 1, title: 'Team Meeting', time: '10:00 AM', date: 'Today' },
-    { id: 2, title: 'Project Deadline', time: '5:00 PM', date: 'Tomorrow' },
-    { id: 3, title: 'Client Call', time: '2:00 PM', date: 'Friday' },
-    { id: 4, title: 'Weekly Review', time: '3:00 PM', date: 'Friday' },
-  ];
-
-  const completionRate = Math.round((stats.completedTasks / stats.totalTasks) * 100);
+  // Get today's events
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Get upcoming events (next 3 days)
+  const upcomingEvents = events
+    .filter(event => {
+      const eventDate = new Date(event.date);
+      const today = new Date();
+      const threeDaysFromNow = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000);
+      return eventDate >= today && eventDate <= threeDaysFromNow;
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 4);
 
   // Simulate data refresh
   const handleRefresh = () => {
@@ -205,7 +205,7 @@ const DashboardPage = () => {
                     Completion Rate
                   </Typography>
                   <Typography variant="h4" color="inherit">
-                    {completionRate}%
+                    {stats.completionRate}%
                   </Typography>
                 </Box>
               </Box>
@@ -326,12 +326,12 @@ const DashboardPage = () => {
                     <Box display="flex" justifyContent="space-between" sx={{ mb: 1 }}>
                       <Typography variant="body2">Task Completion</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {completionRate}%
+                        {stats.completionRate}%
                       </Typography>
                     </Box>
                     <LinearProgress 
                       variant="determinate" 
-                      value={completionRate} 
+                      value={stats.completionRate} 
                       sx={{ 
                         height: 8,
                         borderRadius: 4,
@@ -345,7 +345,7 @@ const DashboardPage = () => {
                   </Box>
                   <Typography variant="body2" color="textSecondary">
                     You've completed {stats.completedTasks} out of {stats.totalTasks} tasks this week. 
-                    {completionRate >= 75 ? ' Excellent progress! 🎉' : ' Keep up the great work! 💪'}
+                    {stats.completionRate >= 75 ? ' Excellent progress! 🎉' : ' Keep up the great work! 💪'}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={4}>

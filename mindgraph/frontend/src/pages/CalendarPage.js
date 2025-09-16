@@ -34,71 +34,17 @@ import {
   LocationOn
 } from '@mui/icons-material';
 import { useAuth } from '../utils/AuthContext';
+import { useData } from '../utils/DataContext';
 
 const CalendarPage = () => {
-  const { user } = useAuth();
+  const { 
+    events, 
+    addEvent, 
+    getEventsForDate 
+  } = useData();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [openDialog, setOpenDialog] = useState(false);
-
-  // Sample events data
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: 'Team Meeting',
-      description: 'Weekly team sync meeting',
-      date: '2025-09-15',
-      startTime: '10:00',
-      endTime: '11:00',
-      type: 'meeting',
-      location: 'Conference Room A',
-      attendees: ['John', 'Sarah', 'Mike']
-    },
-    {
-      id: 2,
-      title: 'Project Deadline',
-      description: 'Final submission for project proposal',
-      date: '2025-09-16',
-      startTime: '17:00',
-      endTime: '17:30',
-      type: 'deadline',
-      location: 'Online',
-      attendees: []
-    },
-    {
-      id: 3,
-      title: 'Client Call',
-      description: 'Quarterly review with client',
-      date: '2025-09-17',
-      startTime: '14:00',
-      endTime: '15:00',
-      type: 'call',
-      location: 'Zoom',
-      attendees: ['Client Team', 'Project Manager']
-    },
-    {
-      id: 4,
-      title: 'Training Session',
-      description: 'New technology training',
-      date: '2025-09-18',
-      startTime: '09:00',
-      endTime: '12:00',
-      type: 'training',
-      location: 'Training Room',
-      attendees: ['All Team']
-    },
-    {
-      id: 5,
-      title: 'Lunch Break',
-      description: 'Team lunch',
-      date: '2025-09-19',
-      startTime: '12:00',
-      endTime: '13:00',
-      type: 'social',
-      location: 'Restaurant',
-      attendees: ['Team']
-    }
-  ]);
 
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -108,7 +54,7 @@ const CalendarPage = () => {
     endTime: '10:00',
     type: 'meeting',
     location: '',
-    attendees: []
+    attendees: ''
   });
 
   const eventTypes = ['meeting', 'deadline', 'call', 'training', 'social', 'personal'];
@@ -137,12 +83,6 @@ const CalendarPage = () => {
     return days;
   };
 
-  // Get events for a specific date
-  const getEventsForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return events.filter(event => event.date === dateStr);
-  };
-
   // Navigate months
   const navigateMonth = (direction) => {
     setCurrentDate(prev => {
@@ -165,12 +105,10 @@ const CalendarPage = () => {
 
   // Handle event creation
   const handleCreateEvent = () => {
-    const event = {
-      id: Math.max(...events.map(e => e.id)) + 1,
+    addEvent({
       ...newEvent,
-      attendees: newEvent.attendees.split(',').map(a => a.trim()).filter(a => a)
-    };
-    setEvents([...events, event]);
+      attendees: (newEvent.attendees || '').split(',').map(a => a.trim()).filter(a => a)
+    });
     setNewEvent({
       title: '',
       description: '',
@@ -179,7 +117,7 @@ const CalendarPage = () => {
       endTime: '10:00',
       type: 'meeting',
       location: '',
-      attendees: []
+      attendees: ''
     });
     setOpenDialog(false);
   };
@@ -210,14 +148,14 @@ const CalendarPage = () => {
     return icons[type] || <Event />;
   };
 
-  const days = getDaysInMonth(currentDate);
+  const days = getDaysInMonth(currentDate) || [];
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  const selectedDateEvents = getEventsForDate(selectedDate);
+  const selectedDateEvents = getEventsForDate(selectedDate) || [];
 
   return (
     <Container maxWidth="lg">
@@ -306,7 +244,7 @@ const CalendarPage = () => {
                       
                       {/* Events for this day */}
                       <Box sx={{ mt: 1 }}>
-                        {getEventsForDate(day).slice(0, 2).map(event => (
+                        {(getEventsForDate(day) || []).slice(0, 2).map(event => (
                           <Chip
                             key={event.id}
                             label={event.title}
@@ -328,9 +266,9 @@ const CalendarPage = () => {
                             }}
                           />
                         ))}
-                        {getEventsForDate(day).length > 2 && (
+                        {(getEventsForDate(day) || []).length > 2 && (
                           <Typography variant="caption" color="textSecondary">
-                            +{getEventsForDate(day).length - 2} more
+                            +{(getEventsForDate(day) || []).length - 2} more
                           </Typography>
                         )}
                       </Box>
@@ -397,10 +335,10 @@ const CalendarPage = () => {
                               {event.location}
                             </Typography>
                           )}
-                          {event.attendees.length > 0 && (
+                          {(event.attendees || []).length > 0 && (
                             <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
                               <Person sx={{ fontSize: 14, mr: 0.5 }} />
-                              {event.attendees.join(', ')}
+                              {(event.attendees || []).join(', ')}
                             </Typography>
                           )}
                         </Box>

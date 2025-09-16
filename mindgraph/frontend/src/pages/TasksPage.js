@@ -34,65 +34,19 @@ import {
   Delete,
   CheckCircle,
   RadioButtonUnchecked,
-  Schedule,
-  Flag
+  Schedule
 } from '@mui/icons-material';
 import { useAuth } from '../utils/AuthContext';
+import { useData } from '../utils/DataContext';
 
 const TasksPage = () => {
-  const { user } = useAuth();
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: 'Complete project proposal',
-      description: 'Write a comprehensive project proposal for the new client',
-      status: 'completed',
-      priority: 'high',
-      dueDate: '2025-09-15',
-      category: 'work',
-      createdAt: '2025-09-10'
-    },
-    {
-      id: 2,
-      title: 'Review team feedback',
-      description: 'Go through all team feedback and compile suggestions',
-      status: 'pending',
-      priority: 'medium',
-      dueDate: '2025-09-16',
-      category: 'work',
-      createdAt: '2025-09-12'
-    },
-    {
-      id: 3,
-      title: 'Prepare presentation slides',
-      description: 'Create slides for the quarterly review meeting',
-      status: 'in-progress',
-      priority: 'high',
-      dueDate: '2025-09-17',
-      category: 'work',
-      createdAt: '2025-09-13'
-    },
-    {
-      id: 4,
-      title: 'Update documentation',
-      description: 'Update the project documentation with latest changes',
-      status: 'pending',
-      priority: 'low',
-      dueDate: '2025-09-18',
-      category: 'maintenance',
-      createdAt: '2025-09-14'
-    },
-    {
-      id: 5,
-      title: 'Plan weekend trip',
-      description: 'Research and plan the upcoming weekend getaway',
-      status: 'pending',
-      priority: 'low',
-      dueDate: '2025-09-20',
-      category: 'personal',
-      createdAt: '2025-09-15'
-    }
-  ]);
+  const { 
+    tasks, 
+    addTask, 
+    updateTask, 
+    deleteTask, 
+    toggleTaskStatus 
+  } = useData();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -143,13 +97,10 @@ const TasksPage = () => {
   };
 
   const handleCreateTask = () => {
-    const task = {
-      id: Math.max(...tasks.map(t => t.id)) + 1,
+    addTask({
       ...newTask,
-      status: 'pending',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setTasks([...tasks, task]);
+      status: 'pending'
+    });
     setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', category: 'work' });
     setOpenDialog(false);
   };
@@ -163,28 +114,19 @@ const TasksPage = () => {
   };
 
   const handleUpdateTask = () => {
-    setTasks(tasks.map(task => 
-      task.id === editingTask.id ? { ...task, ...newTask } : task
-    ));
+    updateTask(editingTask.id, newTask);
     setEditingTask(null);
     setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', category: 'work' });
     setOpenDialog(false);
   };
 
   const handleDeleteTask = (taskId) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+    deleteTask(taskId);
     setAnchorEl(null);
   };
 
   const handleToggleStatus = (taskId) => {
-    setTasks(tasks.map(task => {
-      if (task.id === taskId) {
-        const newStatus = task.status === 'completed' ? 'pending' : 
-                         task.status === 'pending' ? 'in-progress' : 'completed';
-        return { ...task, status: newStatus };
-      }
-      return task;
-    }));
+    toggleTaskStatus(taskId);
   };
 
   const getStatusColor = (status) => {

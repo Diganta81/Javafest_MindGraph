@@ -21,6 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Utils
 import { AuthProvider } from './utils/AuthContext';
+import { DataProvider } from './utils/DataContext';
 
 const queryClient = new QueryClient();
 
@@ -41,65 +42,67 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AuthProvider>
-          <Router>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Navigate to="/dashboard" replace />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <DashboardPage />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/tasks" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TasksPage />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/calendar" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <CalendarPage />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/chatbot" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ChatbotPage />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/preferences" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <PreferencesPage />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </Router>
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
+          <DataProvider>
+            <Router>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Navigate to="/dashboard" replace />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <DashboardPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/tasks" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <TasksPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/calendar" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <CalendarPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/chatbot" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ChatbotPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/preferences" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PreferencesPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+              </Routes>
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+              />
+            </Router>
+          </DataProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
