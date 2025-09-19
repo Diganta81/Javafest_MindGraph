@@ -229,3 +229,7 @@ The system will learn from:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Authors
+- Diganta Saha Tirtho
+- H.M. Aktaruzzaman Mukdho
