@@ -231,5 +231,5 @@ The system will learn from:
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Authors
-- Diganta Saha Tirtho
+- Diganta Saha Tirtha
 - H.M. Aktaruzzaman Mukdho
