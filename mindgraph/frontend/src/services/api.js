@@ -89,13 +89,8 @@ export const scheduleService = {
 
 // Chatbot services
 export const chatbotService = {
-  sendMessage: (message, conversationId = null) => 
-    api.post('/chatbot/message', { message, conversationId }),
-  getConversationHistory: (conversationId) => 
-    api.get(`/chatbot/conversation/${conversationId}`),
-  createTask: (taskData) => api.post('/chatbot/create-task', taskData),
-  createEvent: (eventData) => api.post('/chatbot/create-event', eventData),
-  querySchedule: (query) => api.post('/chatbot/query-schedule', { query }),
+  sendMessage: (message) => api.post('/chatbot/message', { message }),
+  healthCheck: () => api.get('/chatbot/health'),
 };
 
 // Analytics services

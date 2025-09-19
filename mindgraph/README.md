@@ -49,7 +49,8 @@ mindgraph/
 │   │   ├── dto/              # Data transfer objects
 │   │   └── config/           # Configuration classes
 │   ├── src/main/resources/
-│   │   └── application.properties
+│   │   ├── application.properties
+│   │   └── credentials.properties  # API keys (create this file - not in git)
 │   └── pom.xml
 ├── frontend/                   # React frontend
 │   ├── src/
@@ -107,6 +108,66 @@ Exit by:
 ```
 Now you should be able to run the schema.sql
 
+### Google Gemini API Key Setup
+
+The application uses Google's Gemini AI for the chatbot functionality. You need to obtain an API key to enable AI features.
+
+#### Step 1: Get a Gemini API Key
+
+1. Visit [Google AI Studio](https://aistudio.google.com/)
+2. Sign in with your Google account
+3. Click **"Get API Key"** in the top right corner
+4. Create a new project or select an existing one
+5. Generate a new API key
+6. Copy the API key (it will look like: `AIzaSyC...`)
+
+#### Step 2: Configure the API Key
+
+1. Navigate to the backend resources directory:
+```bash
+cd backend/src/main/resources/
+```
+
+2. Create a `credentials.properties` file:
+```bash
+touch credentials.properties
+```
+
+3. Add your API key to the `credentials.properties` file:
+```properties
+# Google Gemini API Key
+gemini.api.key=AIzaSyC_your_actual_api_key_here
+```
+
+#### Important Security Notes
+
+- ⚠️ **Never commit your API key to Git** - The `credentials.properties` file is already added to `.gitignore`
+- 🔒 **Keep your API key secret** - Don't share it publicly or in screenshots
+- 📝 **Use different keys for different environments** (development, staging, production)
+- 💰 **Monitor your API usage** - The free tier has usage limits
+
+#### Alternative Configuration Methods
+
+**Option A: Environment Variable**
+```bash
+# Set environment variable (Windows PowerShell)
+$env:GEMINI_API_KEY="your_api_key_here"
+
+# Then update application.properties to use:
+gemini.api.key=${GEMINI_API_KEY:YOUR_GEMINI_API_KEY_HERE}
+```
+
+**Option B: Command Line Parameter**
+```bash
+java -jar target/mindgraph-backend-0.0.1-SNAPSHOT.jar --gemini.api.key=your_api_key_here
+```
+
+#### Troubleshooting
+
+- If you see "API key not configured" errors, verify your `credentials.properties` file exists and contains the correct key
+- If requests fail, check your API key is valid and has sufficient quota
+- The application will show detailed debug logs in the console when processing chatbot messages
+
 ### Backend Setup
 
 1. Navigate to the backend directory:
@@ -126,7 +187,7 @@ spring.datasource.password=your_password
 mvn spring-boot:run
 ```
 
-The backend will start on `http://localhost:8080`
+The backend will start on `http://localhost:8081` (with context path `/api`)
 
 ### Frontend Setup
 

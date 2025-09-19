@@ -32,6 +32,7 @@ import {
   Help
 } from '@mui/icons-material';
 import { useAuth } from '../utils/AuthContext';
+import { chatbotService } from '../services/api';
 
 const ChatbotPage = () => {
   const { user } = useAuth();
@@ -55,99 +56,6 @@ const ChatbotPage = () => {
   const [showQuickActions, setShowQuickActions] = useState(true);
   const messagesEndRef = useRef(null);
 
-  // Predefined responses for demo purposes
-  const botResponses = {
-    'task summary': `Here's your task summary:
-    
-📊 **Current Status:**
-- Total tasks: 24
-- Completed: 18 (75%)
-- In progress: 4
-- Pending: 2
-
-🎯 **Priority breakdown:**
-- High priority: 3 tasks
-- Medium priority: 8 tasks  
-- Low priority: 13 tasks
-
-⏰ **Upcoming deadlines:**
-- Project proposal (Today)
-- Team review (Tomorrow)
-- Client presentation (Friday)`,
-
-    'schedule': `I can help you schedule tasks! Here are some options:
-
-🗓️ **Smart scheduling suggestions:**
-- Best time for focused work: 9-11 AM
-- Optimal meeting slots: 2-4 PM  
-- Break recommendations: Every 25 minutes
-
-📋 **Quick actions:**
-- Create a new task
-- Block time for deep work
-- Schedule team meetings
-- Set recurring reminders`,
-
-    'productivity': `Here are some personalized productivity tips for you:
-
-⚡ **Energy optimization:**
-- Your peak performance: 9-11 AM
-- Consider batching similar tasks
-- Take breaks every 25-30 minutes
-
-🎯 **Focus strategies:**
-- Use the Pomodoro technique
-- Eliminate distractions during deep work
-- Prioritize high-impact tasks in the morning
-
-📈 **Progress tracking:**
-- You're 75% completion rate is excellent!
-- Consider breaking down large tasks
-- Celebrate small wins along the way`,
-
-    'analyze': `📊 **Your productivity analysis:**
-
-**This week's highlights:**
-- Completed 18 out of 24 tasks (75% completion rate)
-- Average task completion time: 2.3 hours
-- Most productive day: Tuesday
-- Peak performance time: 9-11 AM
-
-**Improvement suggestions:**
-- You tend to schedule too many tasks on Mondays
-- Consider time-blocking for better focus
-- Your afternoon productivity could be improved with shorter breaks
-
-**Trends:**
-- 📈 15% improvement from last week
-- 🎯 Consistently meeting deadlines
-- ⏰ Good at estimating task duration`,
-
-    'help': `🤖 **I can help you with:**
-
-**Task Management:**
-- Create, edit, and organize tasks
-- Set priorities and deadlines
-- Track progress and completion
-
-**Scheduling:**
-- Optimize your calendar
-- Suggest best times for different activities
-- Block focus time
-
-**Analytics:**
-- Analyze your productivity patterns
-- Generate progress reports
-- Identify improvement areas
-
-**Tips & Insights:**
-- Personalized productivity advice
-- Time management strategies
-- Workflow optimization
-
-Just ask me anything like "create a task", "when should I schedule meetings?", or "show my progress"!`
-  };
-
   const quickActions = [
     { icon: <Assignment />, label: 'Task Summary', action: 'task summary' },
     { icon: <Schedule />, label: 'Schedule Help', action: 'schedule' },
@@ -164,7 +72,7 @@ Just ask me anything like "create a task", "when should I schedule meetings?", o
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const userMessage = {
@@ -175,72 +83,38 @@ Just ask me anything like "create a task", "when should I schedule meetings?", o
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = generateBotResponse(inputMessage.toLowerCase());
+    try {
+      // Call the backend API
+      const response = await chatbotService.sendMessage(currentMessage);
+      
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        content: botResponse,
-        timestamp: new Date(),
-        suggestions: generateSuggestions(inputMessage.toLowerCase())
+        content: response.data.response,
+        timestamp: new Date(response.data.timestamp),
+        suggestions: generateSuggestions(currentMessage.toLowerCase())
       };
 
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error sending message to chatbot:', error);
+      
+      // Fallback to demo response if API fails
+      const fallbackMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: "I'm sorry, I'm having trouble connecting to my AI brain right now. Please try again in a moment, or check if you're logged in properly.",
+        timestamp: new Date(),
+        suggestions: ['Try again', 'Check connection', 'Contact support']
+      };
+
+      setMessages(prev => [...prev, fallbackMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
-  };
-
-  const generateBotResponse = (input) => {
-    // Simple keyword matching for demo
-    if (input.includes('task') && input.includes('summary')) {
-      return botResponses['task summary'];
-    } else if (input.includes('schedule') || input.includes('calendar')) {
-      return botResponses['schedule'];
-    } else if (input.includes('productivity') || input.includes('tips')) {
-      return botResponses['productivity'];
-    } else if (input.includes('analyze') || input.includes('progress') || input.includes('report')) {
-      return botResponses['analyze'];
-    } else if (input.includes('help')) {
-      return botResponses['help'];
-    } else if (input.includes('create') && input.includes('task')) {
-      return `I'll help you create a new task! 
-
-📝 **Quick task creation:**
-- What's the task title?
-- When is it due?
-- What's the priority level?
-- Any specific category?
-
-You can also go to the Tasks page to create detailed tasks with full customization options.`;
-    } else if (input.includes('meeting') || input.includes('appointment')) {
-      return `🗓️ **Meeting scheduling assistance:**
-
-**Best meeting times based on your schedule:**
-- Tuesday 2-4 PM (High availability)
-- Wednesday 10 AM-12 PM (Good focus time)
-- Thursday 3-5 PM (Team availability)
-
-**Tips for productive meetings:**
-- Keep them under 30 minutes when possible
-- Send agenda beforehand
-- Block 5 minutes between meetings for transitions
-
-Would you like me to help you schedule a specific meeting?`;
-    } else {
-      return `I understand you're asking about "${input}". While I'm still learning, I can help you with:
-
-🎯 **Main areas I excel at:**
-- Task management and organization
-- Schedule optimization  
-- Productivity analysis
-- Time management tips
-- Progress tracking
-
-Try asking me about your tasks, schedule, or productivity patterns. You can also use the quick action buttons below for common requests!`;
     }
   };
 
@@ -256,7 +130,7 @@ Try asking me about your tasks, schedule, or productivity patterns. You can also
     }
   };
 
-  const handleQuickAction = (action) => {
+  const handleQuickAction = async (action) => {
     const message = {
       id: Date.now(),
       type: 'user',
@@ -267,19 +141,35 @@ Try asking me about your tasks, schedule, or productivity patterns. You can also
     setMessages(prev => [...prev, message]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = botResponses[action] || botResponses['help'];
+    try {
+      // Call the backend API for quick actions too
+      const response = await chatbotService.sendMessage(action);
+      
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        content: response,
-        timestamp: new Date(),
+        content: response.data.response,
+        timestamp: new Date(response.data.timestamp),
         suggestions: ['Task summary', 'Schedule help', 'More tips']
       };
 
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error sending quick action to chatbot:', error);
+      
+      // Fallback message for quick actions
+      const fallbackMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: "I'm sorry, I couldn't process that quick action right now. Please try typing your request instead.",
+        timestamp: new Date(),
+        suggestions: ['Try again', 'Type manually', 'Contact support']
+      };
+
+      setMessages(prev => [...prev, fallbackMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   const handleSuggestionClick = (suggestion) => {

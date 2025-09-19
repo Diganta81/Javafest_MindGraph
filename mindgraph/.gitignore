@@ -51,3 +51,9 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+
+# Sensitive credentials and API keys
+**/credentials.properties
+credentials.properties
+*.credentials
+secrets.properties
