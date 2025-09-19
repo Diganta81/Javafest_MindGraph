@@ -87,6 +87,26 @@ GRANT ALL PRIVILEGES ON DATABASE mindgraph TO mindgraph_user;
 psql -U mindgraph_user -d mindgraph -f database/schema.sql
 ```
 
+If you get the following errors
+```bash
+ERROR: permission denied for schema public
+```
+Then run login as postgres
+```sql
+psql -U postgres -d mindgraph
+```
+and run below three commands:
+```sql
+GRANT USAGE ON SCHEMA public TO mindgraph_user;
+GRANT CREATE ON SCHEMA public TO mindgraph_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO mindgraph_user;
+```
+Exit by:
+```sql
+\q
+```
+Now you should be able to run the schema.sql
+
 ### Backend Setup
 
 1. Navigate to the backend directory:
