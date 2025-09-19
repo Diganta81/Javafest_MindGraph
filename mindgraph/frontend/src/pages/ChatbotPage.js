@@ -36,6 +36,7 @@ import { chatbotService } from '../services/api';
 
 const ChatbotPage = () => {
   const { user } = useAuth();
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -88,8 +89,8 @@ const ChatbotPage = () => {
     setIsTyping(true);
 
     try {
-      // Call the backend API
-      const response = await chatbotService.sendMessage(currentMessage);
+      // Call the backend API with session ID
+      const response = await chatbotService.sendMessage(currentMessage, sessionId);
       
       const botMessage = {
         id: Date.now() + 1,
@@ -142,8 +143,8 @@ const ChatbotPage = () => {
     setIsTyping(true);
 
     try {
-      // Call the backend API for quick actions too
-      const response = await chatbotService.sendMessage(action);
+      // Call the backend API for quick actions too with session ID
+      const response = await chatbotService.sendMessage(action, sessionId);
       
       const botMessage = {
         id: Date.now() + 1,

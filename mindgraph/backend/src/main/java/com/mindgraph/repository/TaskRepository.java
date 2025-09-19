@@ -54,4 +54,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
            "(LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Task> searchTasksByKeyword(@Param("user") User user, @Param("keyword") String keyword);
+    
+    // Additional method for chatbot
+    @Query("SELECT t FROM Task t WHERE t.user.id = :userId ORDER BY t.createdAt DESC")
+    List<Task> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 }

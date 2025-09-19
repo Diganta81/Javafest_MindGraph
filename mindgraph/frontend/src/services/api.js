@@ -89,7 +89,10 @@ export const scheduleService = {
 
 // Chatbot services
 export const chatbotService = {
-  sendMessage: (message) => api.post('/chatbot/message', { message }),
+  sendMessage: (message, sessionId = null) => api.post('/chatbot/message', { 
+    message, 
+    sessionId 
+  }),
   healthCheck: () => api.get('/chatbot/health'),
 };
 
