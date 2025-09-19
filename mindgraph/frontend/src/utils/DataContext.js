@@ -51,37 +51,74 @@ export const DataProvider = ({ children }) => {
   // Events state with localStorage persistence
   const [events, setEvents] = useState(() => {
     const savedEvents = localStorage.getItem('mindgraph_events');
-    return savedEvents ? JSON.parse(savedEvents) : [
+    let parsedEvents = savedEvents ? JSON.parse(savedEvents) : [
       {
         id: 1,
         title: 'Project Deadline',
         date: '2025-09-16',
-        time: '17:00',
+        startTime: '17:00',
+        endTime: '18:00',
         type: 'deadline',
         description: 'Final submission for Q4 proposal',
         priority: 'high',
+        location: '',
+        attendees: [],
         taskId: 1
       },
       {
         id: 2,
         title: 'Team Meeting',
         date: '2025-09-17',
-        time: '10:00',
+        startTime: '10:00',
+        endTime: '11:00',
         type: 'meeting',
         description: 'Weekly team sync and progress review',
         priority: 'medium',
+        location: 'Conference Room A',
+        attendees: ['John', 'Sarah', 'Mike'],
         taskId: 2
       },
       {
         id: 3,
         title: 'Client Presentation',
         date: '2025-09-18',
-        time: '14:00',
+        startTime: '14:00',
+        endTime: '15:30',
         type: 'meeting',
         description: 'Present Q4 proposal to client stakeholders',
-        priority: 'high'
+        priority: 'high',
+        location: 'Client Office',
+        attendees: ['Client Team']
       }
     ];
+
+    // Migrate old event structure to new structure
+    if (parsedEvents && Array.isArray(parsedEvents)) {
+      parsedEvents = parsedEvents.map(event => {
+        if (event.time && !event.startTime) {
+          // Migrate old 'time' property to 'startTime' and 'endTime'
+          const startTime = event.time;
+          const [hour, minute] = startTime.split(':');
+          const endHour = parseInt(hour) + 1;
+          const endTime = `${endHour.toString().padStart(2, '0')}:${minute}`;
+          
+          return {
+            ...event,
+            startTime: startTime,
+            endTime: endTime,
+            location: event.location || '',
+            attendees: event.attendees || []
+          };
+        }
+        return {
+          ...event,
+          location: event.location || '',
+          attendees: event.attendees || []
+        };
+      });
+    }
+
+    return parsedEvents;
   });
 
   // Save to localStorage whenever tasks change
@@ -109,10 +146,13 @@ export const DataProvider = ({ children }) => {
         id: Date.now() + 1,
         title: `Task: ${taskData.title}`,
         date: taskData.dueDate,
-        time: '09:00', // Default time
+        startTime: '09:00', // Default start time
+        endTime: '10:00', // Default end time
         type: 'deadline',
         description: taskData.description,
         priority: taskData.priority,
+        location: '',
+        attendees: [],
         taskId: newTask.id
       };
       setEvents(prev => [...prev, newEvent]);
@@ -235,6 +275,13 @@ export const DataProvider = ({ children }) => {
     });
   };
 
+  // Clear all data (for testing/reset purposes)
+  const clearAllData = () => {
+    localStorage.removeItem('mindgraph_tasks');
+    localStorage.removeItem('mindgraph_events');
+    window.location.reload(); // Reload to reset state
+  };
+
   const value = {
     // Data
     tasks,
@@ -254,7 +301,8 @@ export const DataProvider = ({ children }) => {
     
     // Utility functions
     getStats,
-    getTasksDueSoon
+    getTasksDueSoon,
+    clearAllData
   };
 
   return (
